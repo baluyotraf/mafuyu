@@ -40,7 +40,10 @@ class GloveEmbedding:
         if index < 0:
             raise IndexError
         else:
-            return self._index_to_word[index]
+            try:
+                return self._index_to_word[index]
+            except IndexError:
+                return self.unk
 
     @property
     def weights(self):
