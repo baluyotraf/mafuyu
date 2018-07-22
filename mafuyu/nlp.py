@@ -1,4 +1,5 @@
 import numpy as np
+from .utils import print_distribution
 
 
 class GloveEmbedding:
@@ -60,3 +61,8 @@ class GloveEmbedding:
     @property
     def unk(self):
         return '<UNK>'
+
+
+def print_length_distribution(data, rows=3, plot_size=(10, 2)):
+    lengths = [len(d) for d in data]
+    print_distribution(lengths, 'Lengths', rows, plot_size)
