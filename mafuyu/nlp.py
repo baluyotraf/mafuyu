@@ -1,5 +1,6 @@
 import numpy as np
 from .utils import print_distribution
+import os
 
 
 class GloveEmbedding:
@@ -111,8 +112,12 @@ class CharacterEmbedding:
     def unk_id(self):
         return self._unk_id
 
-    def save(self, path):
-        with open(path, 'w') as file:
+    def save(self, path, encoding='utf-8'):
+        parent_dir = os.path.dirname(path)
+        if parent_dir:
+            os.makedirs(parent_dir, exist_ok=True)
+
+        with open(path, 'w', encoding=encoding) as file:
             for c in self._index_to_char:
                 file.write(c + '\n')
 
@@ -129,8 +134,8 @@ class CharacterEmbedding:
         return instance
 
     @classmethod
-    def load(cls, path):
-        with open(path, 'r') as file:
+    def load(cls, path, encoding='utf-8'):
+        with open(path, 'r', encoding=encoding) as file:
             char_list = [f.strip() for f in file]
         return cls.from_char_list(char_list)
 
