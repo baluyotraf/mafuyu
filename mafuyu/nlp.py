@@ -1,22 +1,29 @@
 import numpy as np
 from .utils import print_distribution
 import os
+import enum
+
+
+class SpecialCharacters(enum.Enum):
+    PAD = '<PAD>'
+    UNKNOWN = '<UNK>'
 
 
 class GloveEmbedding:
 
-    def __init__(self, path):
-        word_to_index = {}
-        index_to_word = []
+    def __init__(self, path, encoding='utf-8'):
+        index_to_word = [
+            SpecialCharacters.PAD,
+            SpecialCharacters.UNKNOWN,
+        ]
         weights = []
         emb_size = None
-        with open(path) as f:
-            for idx, line in enumerate(f):
+        with open(path, 'r', encoding=encoding) as f:
+            for line in f:
                 tokens = line.strip().split(' ')
                 word = tokens[0]
                 vector = [float(w) for w in tokens[1:]]
 
-                word_to_index[word] = idx
                 index_to_word.append(word)
                 weights.append(vector)
 
@@ -24,18 +31,17 @@ class GloveEmbedding:
                     assert emb_size == len(vector)
                 else:
                     emb_size = len(vector)
-        index_to_word.append(self.unk)
 
-        self._word_to_index = word_to_index
         self._index_to_word = index_to_word
+        self._word_to_index = dict(zip(index_to_word, range(len(index_to_word))))
         self._weights = np.asarray(weights)
 
-        self._unk_id = len(weights)
-        self._vocab_size = self._unk_id + 1
+        self._vocab_size = len(index_to_word)
         self._embedding_size = emb_size
 
     def word_to_index(self, word):
-        return self._word_to_index.get(word, self.unk_id)
+        default = self._word_to_index[SpecialCharacters.UNKNOWN]
+        return self._word_to_index.get(word, default)
 
     def index_to_word(self, index):
         if index < 0:
@@ -44,7 +50,7 @@ class GloveEmbedding:
             try:
                 return self._index_to_word[index]
             except IndexError:
-                return self.unk
+                return SpecialCharacters.UNKNOWN
 
     @property
     def weights(self):
@@ -58,14 +64,6 @@ class GloveEmbedding:
     def embedding_size(self):
         return self._embedding_size
 
-    @property
-    def unk_id(self):
-        return self._unk_id
-
-    @property
-    def unk(self):
-        return '<UNK>'
-
 
 class CharacterEmbedding:
 
@@ -73,23 +71,27 @@ class CharacterEmbedding:
         self._char_count = 0
         self._char_to_index = {}
         self._index_to_char = []
-        self._unk_id = 0
 
     def _initialize_from_char_list(self, char_list):
+        index_to_char = [
+            SpecialCharacters.PAD,
+            SpecialCharacters.UNKNOWN,
+        ]
+
         char_set = set(char_list)
+        index_to_char.extend(char_set)
 
-        self._unk_id = len(char_set)
-        self._char_count = self._unk_id + 1
-
-        self._index_to_char = [c for c in char_set]
-        self._char_to_index = dict(zip(self._index_to_char, range(self._unk_id)))
+        self._index_to_char = index_to_char
+        self._char_to_index = dict(zip(index_to_char, range(len(index_to_char))))
+        self._char_count = len(index_to_char)
 
     def _initialize_from_sentences(self, sentences):
         char_list = [c for s in sentences for c in s]
         self._initialize_from_char_list(char_list)
 
     def char_to_index(self, char):
-        return self._char_to_index.get(char, self.unk_id)
+        default = self._char_to_index[SpecialCharacters.UNKNOWN]
+        return self._char_to_index.get(char, default)
 
     def index_to_char(self, index):
         if index < 0:
@@ -98,19 +100,11 @@ class CharacterEmbedding:
             try:
                 return self._index_to_char[index]
             except IndexError:
-                return self.unk
+                return SpecialCharacters.UNKNOWN
 
     @property
     def char_count(self):
         return self._char_count
-
-    @property
-    def unk(self):
-        return '<UNK>'
-
-    @property
-    def unk_id(self):
-        return self._unk_id
 
     def save(self, path, encoding='utf-8'):
         parent_dir = os.path.dirname(path)
