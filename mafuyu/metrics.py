@@ -9,6 +9,31 @@ except ImportError:
     import enum43 as enum
 
 
+class EpochMetrics:
+
+    def __init__(self):
+        self._iteration_data = []
+        self._epoch_data = []
+
+    def add_iteration_data(self, value, batch_size=1):
+        iter_data = (value * batch_size, batch_size)
+        self._iteration_data.append(iter_data)
+
+    def end_epoch(self):
+        values, sizes = tuple(zip(*self._iteration_data))
+        epoch_data = np.sum(values) / np.sum(sizes)
+        self._epoch_data.append(epoch_data)
+        self._iteration_data.clear()
+
+    def clear(self):
+        self._iteration_data.clear()
+        self._epoch_data.clear()
+
+    @property
+    def data(self):
+        return self._epoch_data
+
+
 def print_regression_metrics(true, pred, rows=3, plot_size=(10, 2)):
     true, pred = np.asarray(true), np.asarray(pred)
 
