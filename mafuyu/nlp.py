@@ -154,6 +154,13 @@ class GloveEmbedding(TokenEmbedding):
         return self._embedding_size
 
 
+def pad_to_minimum(s, min_length):
+    length = len(s)
+    if length < min_length:
+        s.extend([SpecialTokens.PAD] * (min_length - length))
+    return s
+
+
 def print_length_distribution(data, rows=3, plot_size=(10, 2)):
     lengths = [len(d) for d in data]
     print_distribution(lengths, 'Lengths', rows, plot_size)
