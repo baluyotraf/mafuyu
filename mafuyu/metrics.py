@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import itertools
 from .utils import print_distribution
+from collections import Counter
 from sklearn.metrics import confusion_matrix, accuracy_score
 try:
     import enum
@@ -32,6 +33,17 @@ class EpochMetrics:
     @property
     def data(self):
         return self._epoch_data
+
+
+def plot_counts(iterable, plot_size=(10, 5)):
+    count = Counter(iterable)
+    item, num = zip(*count.items())
+    plt.figure(figsize=plot_size)
+    rs = plt.barh(item, num)
+    for r, n in zip(rs, num):
+        x = 1.005 * r.get_width()
+        y = r.get_y() + r.get_height() / 2
+        plt.text(x, y, str(n), ha='left', va='center')
 
 
 def print_regression_metrics(true, pred, rows=3, plot_size=(10, 2)):
