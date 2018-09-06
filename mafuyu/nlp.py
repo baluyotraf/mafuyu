@@ -76,12 +76,6 @@ class TokenEmbedding:
     def __contains__(self, item):
         return item in self._token_set
 
-    def __iter__(self):
-        return iter(self._index_to_token)
-
-    def __len__(self):
-        return len(self._index_to_token)
-
     def save(self, path, encoding='utf-8'):
         parent_dir = os.path.dirname(path)
         if parent_dir:
@@ -90,6 +84,10 @@ class TokenEmbedding:
         token_list = self._index_to_token[len(SpecialTokens):]
         with open(path, 'w', encoding=encoding) as file:
             json.dump(token_list, file)
+
+    @property
+    def token_size(self):
+        return len(self._index_to_token)
 
     @classmethod
     def load(cls, path, encoding='utf-8'):
@@ -107,7 +105,7 @@ class GloveEmbedding(TokenEmbedding):
             raise ValueError
 
         self._weights = weights
-        self._embedding_size = weights.shape[1]
+        self._dimensions = weights.shape[1]
         super().__init__(word_list)
 
     def save(self, path, encoding='utf-8'):
@@ -150,8 +148,8 @@ class GloveEmbedding(TokenEmbedding):
         return self._weights
 
     @property
-    def embedding_size(self):
-        return self._embedding_size
+    def dimensions(self):
+        return self._dimensions
 
 
 def pad_to_minimum(s, min_length):
