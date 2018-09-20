@@ -8,5 +8,6 @@ setup(
         'numpy>=1.14.5',
         'matplotlib>=2.2.2',
         'scikit-learn>=0.19.2',
+        'scipy>=1.1.0',
     ],
 )
